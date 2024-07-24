@@ -25,7 +25,6 @@ export class Sprite {
         let frameCount = 0;
         for (let i = 0; i < this.vFrames; i++) {
             for (let j = 0; j < this.hFrames; j++) {
-                console.log("frame", i, j);
                 this.frameMap.set(
                     frameCount,
                     new Vector2(j * this.frameSize.x, i * this.frameSize.y)
