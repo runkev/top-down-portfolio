@@ -5,8 +5,9 @@ import { GameLoop } from './src/GameLoop';
 import { Input, RIGHT, LEFT, UP, DOWN } from './src/Input';
 
 import './style.css'
-import { gridCells } from './src/helpers/grid'; 
+import { gridCells, isSpaceFree } from './src/helpers/grid'; 
 import { moveTowards } from './src/helpers/moveTowards';
+import { walls } from './src/levels/level1';
 
 const canvas = document.querySelector('#game-canvas');
 const ctx = canvas.getContext('2d');
@@ -79,10 +80,12 @@ const tryMove = () => {
     player.frame = 0;
   }
 
-  // check if space is free
+  // Validating if next space is free
+  if (isSpaceFree(walls, nextX, nextY)) {
+    playerDestinationPosition.x = nextX;
+    playerDestinationPosition.y = nextY;
+  }
 
-  playerDestinationPosition.x = nextX;
-  playerDestinationPosition.y = nextY;
 }
 
 const draw = () => {
