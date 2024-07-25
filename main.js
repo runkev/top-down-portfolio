@@ -8,6 +8,9 @@ import './style.css'
 import { gridCells, isSpaceFree } from './src/helpers/grid'; 
 import { moveTowards } from './src/helpers/moveTowards';
 import { walls } from './src/levels/level1';
+import { STAND_DOWN, STAND_UP, STAND_LEFT, STAND_RIGHT, WALK_DOWN, WALK_LEFT, WALK_RIGHT, WALK_UP } from './src/objects/Player/playerAnimations';
+import { Animations } from './src/Animations';
+import { FrameIndexPattern } from './src/FrameIndexPattern';
 
 const canvas = document.querySelector('#game-canvas');
 const ctx = canvas.getContext('2d');
@@ -29,9 +32,20 @@ const player = new Sprite({
   vFrames: 8,
   frame: 1,
   position: new Vector2(gridCells(6), gridCells(5)),
+  animations: new Animations({
+    walkDown: new FrameIndexPattern(WALK_DOWN),
+    walkUp: new FrameIndexPattern(WALK_UP),
+    walkLeft: new FrameIndexPattern(WALK_LEFT),
+    walkRight: new FrameIndexPattern(WALK_RIGHT),
+    standDown: new FrameIndexPattern(STAND_DOWN),
+    standUp: new FrameIndexPattern(STAND_UP),
+    standLeft: new FrameIndexPattern(STAND_LEFT),
+    standRight: new FrameIndexPattern(STAND_RIGHT),
+  })  
 })
 
 const playerDestinationPosition = player.position.duplicate();
+let playerFacing = DOWN;
 
 const shadow = new Sprite({
   resource: resources.images.shadow,
@@ -42,7 +56,7 @@ const shadow = new Sprite({
 const input = new Input();
 
 //updating entities in game
-const update = () => {
+const update = (delta) => {
 
   const distance = moveTowards(player, playerDestinationPosition, 1);
   const hasArrived = distance <= 1; //smooths out movement
@@ -51,11 +65,18 @@ const update = () => {
   if (hasArrived) {
     tryMove();
   }
+
+  // work on player animations
+  player.step(delta);
 }
 
 const tryMove = () => {
 
   if (!input.direction) {
+    if (playerFacing === LEFT) { player.animations.play('standLeft') };
+    if (playerFacing === RIGHT) { player.animations.play('standRight') };
+    if (playerFacing === UP) { player.animations.play('standUp') };
+    if (playerFacing === DOWN) { player.animations.play('standDown') };
     return;
   }
 
@@ -65,20 +86,22 @@ const tryMove = () => {
 
   if (input.direction === LEFT) {
     nextX -= gridSize;
-    player.frame = 9;
+    player.animations.play('walkLeft');
   }
   if (input.direction === RIGHT) {
     nextX += gridSize;
-    player.frame = 3;
+    player.animations.play('walkRight');
   }
   if (input.direction === UP) {
     nextY -= gridSize;
-    player.frame = 6;
+    player.animations.play('walkUp');
   }
   if (input.direction === DOWN) {
     nextY += gridSize;
-    player.frame = 0;
+    player.animations.play('walkDown');
   }
+
+  playerFacing = input.direction ?? playerFacing;;
 
   // Validating if next space is free
   if (isSpaceFree(walls, nextX, nextY)) {
